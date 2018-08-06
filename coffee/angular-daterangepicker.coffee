@@ -91,7 +91,10 @@ picker.directive 'dateRangePicker', ($compile, $timeout, $parse, dateRangePicker
     modelCtrl.$parsers.push (val) ->
       # Parse the string value
       f = (value) ->
-        moment(value, opts.locale.format)
+        moment(value.trim(), opts.locale.format)
+      # make sure user entered valid moment object
+      g = (value) ->
+        if value?.isValid?() then value else moment()
       objValue =
         startDate: null
         endDate: null
@@ -99,10 +102,10 @@ picker.directive 'dateRangePicker', ($compile, $timeout, $parse, dateRangePicker
         if opts.singleDatePicker
           objValue = f(val)
         else
-          x = val.split(opts.locale.separator).map(f)
+          x = val.split(opts.locale.separator.trim()).map(f)
           # Use startOf/endOf day to comply with how bootstrap-daterangepicker works
-          objValue.startDate = x[0].startOf("day")
-          objValue.endDate = x[1].endOf("day")
+          objValue.startDate = g(x[0]).startOf("day")
+          objValue.endDate = g(x[1]).endOf("day")
       objValue
 
     modelCtrl.$isEmpty = (val) ->
